@@ -17,7 +17,7 @@
 
 This document presents the designs and specifications for a family of interval
 arithmetic instruction set extensions based on RISC-V. This family contains 4
-tightly coupled extensions--namely, `Zfintf`, `Zhintf`, `Zfintx`, `Zhintx`. These
+tightly coupled extensions--namely, `Xfintf`, `Xhintf`, `Xfintx`, `Xhintx`. These
 extensions introduce *the same interval arithmetic operations*, and they only
 differ by which register file they use (general purpose or floating point
 registers) and by which floating-point precision they use (single-precision or
@@ -28,17 +28,17 @@ half-precision).
 The design of each extension adheres to the standard RISC-V specification. The
 key design principles are as follows:
 
-1. The extensions are named in *`Z{f,h}int{f,x}`* format. The first letter that
-   comes after `Z` determines the precision of that specific extension; `f`
+1. The extensions are named in *`X{f,h}int{f,x}`* format. The first letter that
+   comes after `X` determines the precision of that specific extension; `f`
    means single-precision, and `h` means half-precision. The last letter in this
    format determines the register file being used, `f` means floating-point
-   registers and `x` means general-purpose registers. For example, `Z-h-int-x`
+   registers and `x` means general-purpose registers. For example, `X-h-int-x`
    is pronounced as "half precision interval arithmetic in general purpose
    registers".
 
-2. The instructions that leverage floating-point registers (`Z*intf`) are
+2. The instructions that leverage floating-point registers (`X*intf`) are
    *incompatible* with the ones that operate on general-purpose registers
-   (`Z*intx`), meaning that they can't coexist at the same time.
+   (`X*intx`), meaning that they can't coexist at the same time.
 
 3. Each member of the family introduces *the same* set of arithmetic,
    statistical, and temporal logic operations, using the exact same encoding
@@ -492,13 +492,13 @@ exception flag. So, the software is responsible for checking them.
   caption: "Accrued exception flag encoding.",
 ) <fcsr>
 
-== "Zfinx" and "Zhinx"
+== "Xfintx" and "Xhintx"
 
 These extensions depend on the `Zicsr` extension for control and status
 registers. And they directly interact with the `fflags` registers to raise and
 clear exceptions. 
 
-== "Zfinf" and "Zhinf"
+== "Xfintf" and "Xhintf"
 
 Since these extensions depend on the standard floating-point extensions, they
 can reuse `fcsr`, the floating-point control and status register. `fcsr`, is a
@@ -511,42 +511,38 @@ listed in @fcsr.
 
 = Individual Extension Descriptions
 
-== "Zhinf": Half-precision interval arithmetic in floating-point registers
+== "Xhintf": Half-precision interval arithmetic in floating-point registers
 - This extension imports *half-precision format* of all instructions.
 - The instructions imported by this extension operate on *floating-point
   registers* `f0-f31`.
-- Depends on the single-precision extension F for 32-bit floating-point
-  registers.
-- Can coexist with `Zfinf`.
-- *Cannot* coexist with `Zfinx` or `Zhinx`.
+- Depends on the half-precision extension `Zfhmin` for 32-bit floating-point
+  registers & 16-bit load-stores.
+- *Cannot* coexist with `Xhintx` or `Xfintx`.
 - Can be implemented on either of RV32 and RV64.
 
-== "Zfinf": Single-precision interval arithmetic in floating-point registers
+== "Xfintf": Single-precision interval arithmetic in floating-point registers
 - This extension imports *single-precision format* of all instructions.
 - The instructions imported by this extension operate on *floating-point
   registers* `f0-f31`.
-- Depends on the double-precision extension D for 64-bit floating-point
+- Depends on the double-precision extension `D` for 64-bit floating-point
   registers.
-- Can coexist with `Zhinf`.
-- *Cannot* coexist with `Zfinx` or `Zhinx`.
+- *Cannot* coexist with `Xhintx` or `Xfintx`.
 - Can be implemented on either of RV32 and RV64.
 
-== "Zhinx": Half-precision interval arithmetic in general-purpose registers
+== "Xhintx": Half-precision interval arithmetic in general-purpose registers
 - This extension imports *half-precision format* of all instructions.
 - The instructions imported by this extension operate on *general-purpose
   registers* `x0-x31`.
 - Depends on the `Zicsr` extension for control and status registers.
-- Can coexist with `Zfinx`.
-- *Cannot* coexist with `Zfinf` or `Zhinf`.
+- *Cannot* coexist with `Xhintf` or `Xfintf`.
 - Can be implemented on either of RV32 and RV64.
 
-== "Zfinx": Single-precision interval arithmetic in general-purpose registers
+== "Xfintx": Single-precision interval arithmetic in general-purpose registers
 - This extension imports *single-precision format* of all instructions.
 - The instructions imported by this extension operate on *general-purpose
   registers* `x0-x31`.
 - Depends on the `Zicsr` extension for control and status registers.
-- Can coexist with `Zhinx`.
-- *Cannot* coexist with `Zfinf` or `Zhinf`.
+- *Cannot* coexist with `Xhintf` or `Xfintf`.
 - On RV32, this extension is implemented with *register pairing*. According to this:
     - Register numbers must be even.
     - Use of misaligned (odd-numbered) registers is reserved.
